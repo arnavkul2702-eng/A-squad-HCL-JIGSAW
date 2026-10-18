@@ -319,81 +319,81 @@
                         <h2 class="font-orbitron font-bold text-xl text-cyan-400 flex items-center gap-2">
                             <i class="fa-solid fa-code"></i> Ultrasonic Radar & Proximity Arduino Firmware
                         </h2>
-                        <p class="text-xs text-slate-400">Embedded hardware controller code for servo sweep, HC-SR04 sensor, and buzzer alerts.</p>
+                        <p class="text-xs text-slate-400">Embedded hardware controller code for servo sweep, HC-SR04 sensor, and DC buzzer alerts.</p>
                     </div>
                 </div>
                 <div class="bg-slate-950 p-4 rounded-xl border border-cyan-500/30 overflow-x-auto max-h-[500px]">
                     <pre class="text-xs font-mono text-emerald-400 leading-relaxed"><code>#include &lt;Servo.h&gt;
 
-const int trigPin = 4;
-const int echoPin = 5;
-const int buzzerPin = 10;
-const int servoPin = 12;
+const int trigPin = 7;
+const int echoPin = 6;
+const int servoPin = 9;
+const int buzzerPin = 3;  // DC Buzzer on pin 3
 
-Servo myServo;
+Servo myServo;  // Create servo object
 
 void setup() {
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  pinMode(buzzerPin, OUTPUT);
-  
-  myServo.attach(servoPin);
-  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);    // Set trigPin as OUTPUT
+  pinMode(echoPin, INPUT);     // Set echoPin as INPUT
+  pinMode(buzzerPin, OUTPUT);  // Set buzzerPin as OUTPUT
+  myServo.attach(servoPin);    // Attach servo on pin 9
+  Serial.begin(9600);          // Start serial monitor
 }
 
 void loop() {
-  // 1. Sweep from 0 to 180 degrees (Medium speed)
-  for (int i = 0; i &lt;= 180; i += 2) {
-    myServo.write(i);
-    delay(10);
+  // 1. Sweep from 0 to 180 degrees
+  for (int pos = 0; pos &lt;= 180; pos += 5) {
+    myServo.write(pos);
+    delay(10); 
     
-    int distance = calculateDistance();
-    
-    // Send data to Serial Monitor (Angle, Distance)
-    Serial.print(i);
-    Serial.print(",");
-    Serial.print(distance);
-    Serial.println(".");
-    
-    // Buzzer triggers only if an object is closer than 15 cm
-    if (distance &gt; 0 && distance &lt; 15) {
-      digitalWrite(buzzerPin, HIGH);
-    } else {
-      digitalWrite(buzzerPin, LOW);
-    }
+    int distance = getDistance(); 
+    checkBuzzer(distance); 
+    printData(pos, distance);
   }
-
+  
   // 2. Sweep back from 180 to 0 degrees
-  for (int i = 180; i &gt;= 0; i -= 2) {
-    myServo.write(i);
-    delay(10);
+  for (int pos = 180; pos &gt;= 0; pos -= 5) {
+    myServo.write(pos);
+    delay(10); 
     
-    int distance = calculateDistance();
-    
-    Serial.print(i);
-    Serial.print(",");
-    Serial.print(distance);
-    Serial.println(".");
-    
-    if (distance &gt; 0 && distance &lt; 15) {
-      digitalWrite(buzzerPin, HIGH);
-    } else {
-      digitalWrite(buzzerPin, LOW);
-    }
+    int distance = getDistance(); 
+    checkBuzzer(distance); 
+    printData(pos, distance);
   }
 }
 
-// Function to measure distance with the ultrasonic sensor
-int calculateDistance() {
+// Helper function to measure distance with the ultrasonic sensor
+int getDistance() {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
+  
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   
-  long duration = pulseIn(echoPin, HIGH, 30000);
+  long duration = pulseIn(echoPin, HIGH, 15000); // Timeout keeps it fast
+  if (duration == 0) return 100; // Default max distance if nothing is detected
+  
   int distance = duration * 0.034 / 2;
   return distance;
+}
+
+// Helper function for DC Active Buzzer with a minimum beep duration
+void checkBuzzer(int distance) {
+  if (distance &gt; 0 && distance &lt;= 20) {
+    digitalWrite(buzzerPin, HIGH); // Turn buzzer ON
+    delay(150);                    // Keep it ON long enough to actually hear the beep!
+    digitalWrite(buzzerPin, LOW);  // Turn buzzer OFF
+  }
+}
+
+// Helper function to keep the loop clean and print data
+void printData(int pos, int distance) {
+  Serial.print("Angle: ");
+  Serial.print(pos);
+  Serial.print("° \t Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
 }</code></pre>
                 </div>
             </div>
