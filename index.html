@@ -151,8 +151,8 @@
             <button onclick="switchTab('telemetry')" id="btn-telemetry" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
                 <i class="fa-solid fa-chart-line"></i><span>Telemetry & Power</span>
             </button>
-            <button onclick="switchTab('innovation')" id="btn-innovation" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
-                <i class="fa-solid fa-lightbulb"></i><span>Dual-Harvest Tech</span>
+            <button onclick="switchTab('arduino')" id="btn-arduino" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-microchip"></i><span>Arduino Hardware Code</span>
             </button>
             <button onclick="switchTab('team')" id="btn-team" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
                 <i class="fa-solid fa-users"></i><span>Team A-Squad</span>
@@ -311,25 +311,90 @@
             </div>
         </section>
 
-        <!-- TAB 3: INNOVATION -->
-        <section id="tab-innovation" class="hidden space-y-6">
-            <div class="glass-card rounded-2xl p-8 space-y-6">
-                <h2 class="font-orbitron font-bold text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-amber-400">
-                    HCL Jigsaw Innovation Breakthrough
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-300">
-                    <div class="space-y-3 bg-slate-900/50 p-6 rounded-xl border border-slate-800">
-                        <h4 class="font-orbitron font-bold text-amber-400 text-base">The Problem: Heavy Freight Power Limits</h4>
-                        <p>
-                            Commercial semi-trucks consume massive amounts of electricity. Relying solely on stationary charging stations leads to long downtime and heavy battery weight.
-                        </p>
+        <!-- TAB 3: ARDUINO HARDWARE CODE -->
+        <section id="tab-arduino" class="hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6 md:p-8 space-y-4">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <h2 class="font-orbitron font-bold text-xl text-cyan-400 flex items-center gap-2">
+                            <i class="fa-solid fa-code"></i> Ultrasonic Radar & Proximity Arduino Firmware
+                        </h2>
+                        <p class="text-xs text-slate-400">Embedded hardware controller code for servo sweep, HC-SR04 sensor, and buzzer alerts.</p>
                     </div>
-                    <div class="space-y-3 bg-slate-900/50 p-6 rounded-xl border border-slate-800">
-                        <h4 class="font-orbitron font-bold text-cyan-400 text-base">Our Solution: Solar & Turbine Dual-Harvest</h4>
-                        <p>
-                            By combining roof solar panels with front-mounted micro-turbines that harness oncoming wind during transit, our 18-wheeler continuously self-charges while driving on highways!
-                        </p>
-                    </div>
+                </div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-cyan-500/30 overflow-x-auto max-h-[500px]">
+                    <pre class="text-xs font-mono text-emerald-400 leading-relaxed"><code>#include &lt;Servo.h&gt;
+
+const int trigPin = 4;
+const int echoPin = 5;
+const int buzzerPin = 10;
+const int servoPin = 12;
+
+Servo myServo;
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  
+  myServo.attach(servoPin);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // 1. Sweep from 0 to 180 degrees (Medium speed)
+  for (int i = 0; i &lt;= 180; i += 2) {
+    myServo.write(i);
+    delay(10);
+    
+    int distance = calculateDistance();
+    
+    // Send data to Serial Monitor (Angle, Distance)
+    Serial.print(i);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.println(".");
+    
+    // Buzzer triggers only if an object is closer than 15 cm
+    if (distance &gt; 0 && distance &lt; 15) {
+      digitalWrite(buzzerPin, HIGH);
+    } else {
+      digitalWrite(buzzerPin, LOW);
+    }
+  }
+
+  // 2. Sweep back from 180 to 0 degrees
+  for (int i = 180; i &gt;= 0; i -= 2) {
+    myServo.write(i);
+    delay(10);
+    
+    int distance = calculateDistance();
+    
+    Serial.print(i);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.println(".");
+    
+    if (distance &gt; 0 && distance &lt; 15) {
+      digitalWrite(buzzerPin, HIGH);
+    } else {
+      digitalWrite(buzzerPin, LOW);
+    }
+  }
+}
+
+// Function to measure distance with the ultrasonic sensor
+int calculateDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  long duration = pulseIn(echoPin, HIGH, 30000);
+  int distance = duration * 0.034 / 2;
+  return distance;
+}</code></pre>
                 </div>
             </div>
         </section>
@@ -346,23 +411,23 @@
                 </div>
 
                 <div class="bg-slate-900/60 p-6 rounded-xl border border-cyan-500/30 text-left space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-wrap gap-2">
                         <span class="text-slate-400 text-xs uppercase font-mono">Team Coordinator & Idea Generator</span>
                         <span class="text-cyan-400 font-bold font-orbitron">Arnav Kulkarni</span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-wrap gap-2">
                         <span class="text-slate-400 text-xs uppercase font-mono">Lead Hardware & Electronics Engineer</span>
                         <span class="text-emerald-400 font-bold font-orbitron">Adhiraj Kale</span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-wrap gap-2">
                         <span class="text-slate-400 text-xs uppercase font-mono">Simulation & Aerodynamics Specialist</span>
                         <span class="text-amber-400 font-bold font-orbitron">Aarav Zanje</span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-wrap gap-2">
                         <span class="text-slate-400 text-xs uppercase font-mono">Software & AI Architect</span>
                         <span class="text-purple-400 font-bold font-orbitron">Arjun Bhagwat</span>
                     </div>
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
                         <span class="text-slate-400 text-xs uppercase font-mono">Project Focus</span>
                         <span class="text-pink-400 font-bold">Autonomous Solar & Wind Smart Truck</span>
                     </div>
@@ -383,15 +448,22 @@
         }
 
         function switchTab(tabId) {
-            ['simulation', 'telemetry', 'innovation', 'team'].forEach(id => {
-                document.getElementById('tab-' + id).classList.add('hidden');
-                document.getElementById('btn-' + id).classList.remove('active', 'bg-cyan-500', 'text-black');
-                document.getElementById('btn-' + id).classList.add('text-slate-300', 'hover:bg-slate-800');
+            ['simulation', 'telemetry', 'arduino', 'team'].forEach(id => {
+                const el = document.getElementById('tab-' + id);
+                const btn = document.getElementById('btn-' + id);
+                if(el) el.classList.add('hidden');
+                if(btn) {
+                    btn.classList.remove('active', 'bg-cyan-500', 'text-black');
+                    btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+                }
             });
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.add('active');
-            activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            const targetTab = document.getElementById('tab-' + tabId);
+            const targetBtn = document.getElementById('btn-' + tabId);
+            if(targetTab) targetTab.classList.remove('hidden');
+            if(targetBtn) {
+                targetBtn.classList.add('active');
+                targetBtn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            }
         }
 
         let currentSpeed = 65;
@@ -439,10 +511,10 @@
         }
 
         const canvas = document.getElementById('truckCanvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas ? canvas.getContext('2d') : null;
 
         function resizeCanvas() {
-            if(canvas.parentElement) {
+            if(canvas && canvas.parentElement) {
                 canvas.width = canvas.parentElement.clientWidth;
                 canvas.height = canvas.parentElement.clientHeight;
             }
@@ -457,14 +529,15 @@
 
         for(let i=0; i<35; i++) {
             windParticles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * (canvas.height - 100),
+                x: Math.random() * 1200,
+                y: Math.random() * 400,
                 speed: 4 + Math.random() * 6,
                 size: 1 + Math.random() * 2
             });
         }
 
         function animate() {
+            if(!ctx || !canvas) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = '#090a0f';
