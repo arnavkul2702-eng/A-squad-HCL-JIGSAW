@@ -145,16 +145,19 @@
 
         <!-- Navigation Tabs -->
         <nav class="flex flex-wrap gap-2 glass-card p-2 rounded-2xl justify-center lg:justify-start">
-            <button onclick="switchTab('simulation')" id="btn-simulation" class="tab-btn active px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2">
+            <button onclick="switchTab('simulation')" id="btn-simulation" class="tab-btn active px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2">
                 <i class="fa-solid fa-truck-fast"></i><span>Smart Truck Sim</span>
             </button>
-            <button onclick="switchTab('telemetry')" id="btn-telemetry" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
-                <i class="fa-solid fa-chart-line"></i><span>Telemetry & Power</span>
+            <button onclick="switchTab('telemetry')" id="btn-telemetry" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-chart-line"></i><span>Telemetry</span>
             </button>
-            <button onclick="switchTab('arduino')" id="btn-arduino" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
-                <i class="fa-solid fa-microchip"></i><span>Arduino Hardware Code</span>
+            <button onclick="switchTab('arduino1')" id="btn-arduino1" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-microchip"></i><span>Arduino Code (1)</span>
             </button>
-            <button onclick="switchTab('team')" id="btn-team" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
+            <button onclick="switchTab('arduino2')" id="btn-arduino2" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
+                <i class="fa-solid fa-code"></i><span>Arduino Code (2)</span>
+            </button>
+            <button onclick="switchTab('team')" id="btn-team" class="tab-btn px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center space-x-2 text-slate-300 hover:bg-slate-800">
                 <i class="fa-solid fa-users"></i><span>Team A-Squad</span>
             </button>
         </nav>
@@ -311,15 +314,103 @@
             </div>
         </section>
 
-        <!-- TAB 3: ARDUINO HARDWARE CODE -->
-        <section id="tab-arduino" class="hidden space-y-6">
+        <!-- TAB 3: ARDUINO CODE (1) -->
+        <section id="tab-arduino1" class="hidden space-y-6">
             <div class="glass-card rounded-2xl p-6 md:p-8 space-y-4">
                 <div class="flex justify-between items-center flex-wrap gap-4">
                     <div>
                         <h2 class="font-orbitron font-bold text-xl text-cyan-400 flex items-center gap-2">
-                            <i class="fa-solid fa-code"></i> Ultrasonic Radar & Proximity Arduino Firmware
+                            <i class="fa-solid fa-microchip"></i> Arduino Code Version 1 (Ultrasonic Sensor & Servo)
                         </h2>
-                        <p class="text-xs text-slate-400">Embedded hardware controller code for servo sweep, HC-SR04 sensor, and DC buzzer alerts.</p>
+                        <p class="text-xs text-slate-400">Initial firmware configuration for obstacle detection and distance tracking.</p>
+                    </div>
+                </div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-cyan-500/30 overflow-x-auto max-h-[500px]">
+                    <pre class="text-xs font-mono text-emerald-400 leading-relaxed"><code>#include &lt;Servo.h&gt;
+
+const int trigPin = 4;
+const int echoPin = 5;
+const int buzzerPin = 10;
+const int servoPin = 12;
+
+Servo myServo;
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  
+  myServo.attach(servoPin);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // 1. Sweep from 0 to 180 degrees (Medium speed)
+  for (int i = 0; i &lt;= 180; i += 2) {
+    myServo.write(i);
+    delay(10);
+    
+    int distance = calculateDistance();
+    
+    // Send data to Serial Monitor (Angle, Distance)
+    Serial.print(i);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.println(".");
+    
+    // Buzzer triggers only if an object is closer than 15 cm
+    if (distance &gt; 0 && distance &lt; 15) {
+      digitalWrite(buzzerPin, HIGH);
+    } else {
+      digitalWrite(buzzerPin, LOW);
+    }
+  }
+
+  // 2. Sweep back from 180 to 0 degrees
+  for (int i = 180; i &gt;= 0; i -= 2) {
+    myServo.write(i);
+    delay(10);
+    
+    int distance = calculateDistance();
+    
+    Serial.print(i);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.println(".");
+    
+    if (distance &gt; 0 && distance &lt; 15) {
+      digitalWrite(buzzerPin, HIGH);
+    } else {
+      digitalWrite(buzzerPin, LOW);
+    }
+  }
+}
+
+// Function to measure distance with the ultrasonic sensor
+int calculateDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  long duration = pulseIn(echoPin, HIGH, 30000);
+  int distance = duration * 0.034 / 2;
+  return distance;
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: ARDUINO CODE (2) -->
+        <section id="tab-arduino2" class="hidden space-y-6">
+            <div class="glass-card rounded-2xl p-6 md:p-8 space-y-4">
+                <div class="flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <h2 class="font-orbitron font-bold text-xl text-cyan-400 flex items-center gap-2">
+                            <i class="fa-solid fa-code"></i> Arduino Code Version 2 (DC Buzzer & Timeout Optimized)
+                        </h2>
+                        <p class="text-xs text-slate-400">Updated hardware code with pin 3 buzzer, optimized timeout, and helper functions.</p>
                     </div>
                 </div>
                 <div class="bg-slate-950 p-4 rounded-xl border border-cyan-500/30 overflow-x-auto max-h-[500px]">
@@ -399,7 +490,7 @@ void printData(int pos, int distance) {
             </div>
         </section>
 
-        <!-- TAB 4: TEAM -->
+        <!-- TAB 5: TEAM -->
         <section id="tab-team" class="hidden space-y-6">
             <div class="glass-card rounded-2xl p-8 space-y-6 text-center max-w-2xl mx-auto">
                 <div class="w-20 h-20 mx-auto rounded-2xl glow-btn-primary flex items-center justify-center text-black font-black text-3xl font-orbitron">
@@ -448,7 +539,7 @@ void printData(int pos, int distance) {
         }
 
         function switchTab(tabId) {
-            ['simulation', 'telemetry', 'arduino', 'team'].forEach(id => {
+            ['simulation', 'telemetry', 'arduino1', 'arduino2', 'team'].forEach(id => {
                 const el = document.getElementById('tab-' + id);
                 const btn = document.getElementById('btn-' + id);
                 if(el) el.classList.add('hidden');
